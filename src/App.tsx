@@ -4,7 +4,7 @@ const TOURNAMENTS = [
   {
     id: 1,
     title: 'BGMI Pro League',
-    image: 'https://images.unsplash.com/photo-1614680376593-902f74cf0d41?auto=format&fit=crop&q=80&w=1000',
+    image: 'https://images.unsplash.com/photo-1595590424283-b8f17842773f?auto=format&fit=crop&q=80&w=1000',
     tags: ['SQUAD', 'TDM'],
     prize: '₹50,000',
     isLive: true,
@@ -57,9 +57,12 @@ export default function App() {
           <button className="text-[#b9cacb] hover:text-white transition-colors">
             <User size={20} />
           </button>
-          <button className="hidden sm:block bg-[#00dbe9] hover:bg-[#7df4ff] text-[#002022] font-mono text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded shadow-[0_2px_0_0_#00aeb8] hover:shadow-[0_4px_15px_rgba(0,219,233,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
+          <a 
+            href="https://download1334.mediafire.com/0ojo2boscyfgjCRHiIMeieFvSdHKl0dvLWJmP6qUbU7ILo30ZFZxBgauQEwOzsTaTMpqIeMF6ZPwzuQkW8PvMPfn_GOAlDhq3ThhicjA96tRgELqWI7EuDVj3JqTDhPgmQDK5_fOzj0L6DS2yOSLsxmk8pC0YjJ0GPLyBf2oJWbp/qfzibjkfabwfzf6/Arena+Esports.apk"
+            className="hidden sm:inline-block bg-[#00dbe9] hover:bg-[#7df4ff] text-[#002022] font-mono text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded shadow-[0_2px_0_0_#00aeb8] hover:shadow-[0_4px_15px_rgba(0,219,233,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all text-center"
+          >
             Download
-          </button>
+          </a>
         </div>
       </nav>
 
@@ -81,10 +84,13 @@ export default function App() {
               Experience high-octane competitive play.
             </p>
             
-            <button className="relative group overflow-hidden bg-white/5 border border-[#849495]/40 hover:border-[#00dbe9]/60 text-white font-mono text-sm font-bold uppercase tracking-widest px-8 py-4 rounded-lg backdrop-blur-md transition-all duration-300">
+            <a 
+              href="https://download1334.mediafire.com/0ojo2boscyfgjCRHiIMeieFvSdHKl0dvLWJmP6qUbU7ILo30ZFZxBgauQEwOzsTaTMpqIeMF6ZPwzuQkW8PvMPfn_GOAlDhq3ThhicjA96tRgELqWI7EuDVj3JqTDhPgmQDK5_fOzj0L6DS2yOSLsxmk8pC0YjJ0GPLyBf2oJWbp/qfzibjkfabwfzf6/Arena+Esports.apk"
+              className="inline-block relative group overflow-hidden bg-white/5 border border-[#849495]/40 hover:border-[#00dbe9]/60 text-white font-mono text-sm font-bold uppercase tracking-widest px-8 py-4 rounded-lg backdrop-blur-md transition-all duration-300"
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
               Download App
-            </button>
+            </a>
           </div>
 
           <div className="relative w-full aspect-[4/3] lg:aspect-auto lg:h-[550px] bg-white/[0.02] border border-white/10 rounded-[2rem] p-3 md:p-5 backdrop-blur-2xl shadow-[0_0_80px_-20px_rgba(0,219,233,0.15)] group">
@@ -97,6 +103,7 @@ export default function App() {
                   src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&q=80&w=1200" 
                   className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-[2s] ease-out" 
                   alt="Arena Dashboard Interface" 
+                  referrerPolicy="no-referrer"
                 />
                 
                 {/* Simulated UI overlay to match mockup vibe closely */}
@@ -183,6 +190,7 @@ function TournamentCard({
           src={image} 
           alt={title} 
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+          referrerPolicy="no-referrer"
         />
       </div>
 
@@ -214,9 +222,12 @@ function TournamentCard({
               <div className="text-[10px] text-[#b9cacb] font-mono uppercase tracking-[0.15em] mb-1">Prize Pool</div>
               <div className="font-mono text-[#00dbe9] text-xl font-bold">{prize}</div>
             </div>
-            <button className="bg-[#00dbe9] hover:bg-[#7df4ff] text-[#002022] font-mono text-[11px] font-bold uppercase tracking-widest px-5 py-2.5 rounded hover:-translate-y-0.5 active:translate-y-0 transition-all shadow-[0_2px_0_0_#00aeb8] hover:shadow-[0_4px_15px_rgba(0,219,233,0.3)]">
+            <a 
+              href="https://download1334.mediafire.com/0ojo2boscyfgjCRHiIMeieFvSdHKl0dvLWJmP6qUbU7ILo30ZFZxBgauQEwOzsTaTMpqIeMF6ZPwzuQkW8PvMPfn_GOAlDhq3ThhicjA96tRgELqWI7EuDVj3JqTDhPgmQDK5_fOzj0L6DS2yOSLsxmk8pC0YjJ0GPLyBf2oJWbp/qfzibjkfabwfzf6/Arena+Esports.apk"
+              className="inline-block bg-[#00dbe9] hover:bg-[#7df4ff] text-[#002022] font-mono text-[11px] font-bold uppercase tracking-widest px-5 py-2.5 rounded hover:-translate-y-0.5 active:translate-y-0 transition-all shadow-[0_2px_0_0_#00aeb8] hover:shadow-[0_4px_15px_rgba(0,219,233,0.3)] text-center"
+            >
               Join Now
-            </button>
+            </a>
           </div>
         </div>
       </div>
