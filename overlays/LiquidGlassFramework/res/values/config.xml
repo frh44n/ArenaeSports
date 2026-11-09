@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Hardware-accelerated window blur & translucent background styling -->
+    <bool name="config_windowBlursSupported">true</bool>
+    <bool name="config_sf_limitedAlpha">false</bool>
+    <integer name="config_windowBlurRadius">45</integer>
+    <dimen name="window_corner_radius">28dp</dimen>
+
+    <!-- Liquid Glass System Color Palette -->
+    <color name="liquid_glass_bg">#26FFFFFF</color>
+    <color name="liquid_glass_scrim">#4D050B14</color>
+    <color name="liquid_glass_border">#40FFFFFF</color>
+    <color name="liquid_glass_highlight">#80FFFFFF</color>
+    <color name="liquid_glass_card">#1AFFFFFF</color>
+    <color name="liquid_glass_pressed">#33FFFFFF</color>
+</resources>

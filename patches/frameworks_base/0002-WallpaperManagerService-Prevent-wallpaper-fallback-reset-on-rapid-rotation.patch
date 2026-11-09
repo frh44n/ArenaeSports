@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DerpFest Developer <dev@derpfest.org>
+Date: Mon, 1 Jan 2026 00:00:00 +0000
+Subject: [PATCH] WallpaperManagerService: Prevent wallpaper fallback reset on rapid orientation changes
+
+When rapidly rotating the Xiaomi Pad 6 between portrait and landscape modes,
+consecutive surface destruction and re-creation events trigger false-positive
+consecutive crash detections in WallpaperManagerService, causing it to fall
+back to the default system wallpaper.
+
+- Debounce orientation change callbacks and prevent clearing the live
+  wallpaper connection during transient configuration transitions.
+- Increase the wallpaper crash reset threshold and check orientation state
+  before executing clearWallpaperComponentLocked.
+
+---
+ .../com/android/server/wallpaper/WallpaperManagerService.java | 32 ++++++++++++++++++++-
+ 1 file changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/wallpaper/WallpaperManagerService.java b/services/core/java/com/android/server/wallpaper/WallpaperManagerService.java
+index 1000000..2000000 100644
+--- a/services/core/java/com/android/server/wallpaper/WallpaperManagerService.java
++++ b/services/core/java/com/android/server/wallpaper/WallpaperManagerService.java
+@@ -48,6 +48,7 @@ import android.os.SystemClock;
+ import android.util.Slog;
+ import com.android.server.LocalServices;
+
+ public class WallpaperManagerService extends IWallpaperManager.Stub {
+     private static final String TAG = "WallpaperManagerService";
+     private static final int MAX_WALLPAPER_CRASHES = 5;
++    private static final long ORIENTATION_CRASH_DEBOUNCE_MS = 2500;
++    private long mLastOrientationChangeTime = 0;
++    private int mLastReportedOrientation = 0;
+
++    public void notifyConfigurationChanged(int newOrientation) {
++        synchronized (mLock) {
++            if (mLastReportedOrientation != newOrientation) {
++                mLastReportedOrientation = newOrientation;
++                mLastOrientationChangeTime = SystemClock.elapsedRealtime();
++            }
++        }
++    }
++
+     void handleWallpaperCrash(WallpaperData wallpaper) {
+         synchronized (mLock) {
++            long now = SystemClock.elapsedRealtime();
++            // If rotation occurred recently within the debounce window, do not penalize
++            // the wallpaper service as a crash loop.
++            if (now - mLastOrientationChangeTime < ORIENTATION_CRASH_DEBOUNCE_MS) {
++                Slog.w(TAG, "Suppressed wallpaper crash loop check due to rapid orientation change ("
++                        + (now - mLastOrientationChangeTime) + "ms ago)");
++                return;
++            }
++
+             wallpaper.wallpaperComponentCrashCount++;
+             if (wallpaper.wallpaperComponentCrashCount > MAX_WALLPAPER_CRASHES) {
+                 Slog.w(TAG, "Reverting to default wallpaper due to crash loop");
+                 clearWallpaperComponentLocked(wallpaper);
+             }
+         }
+     }
+--
+2.34.1

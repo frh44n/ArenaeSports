@@ -1,0 +1,6 @@
+runtime_resource_overlay {
+    name: "LiquidGlassSystemUIOverlay",
+    theme: "LiquidGlassSystemUI",
+    sdk_version: "current",
+    product_specific: true,
+}

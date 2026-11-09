@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="config_enableRenderEngineBlur">true</bool>
+    <color name="qs_blur_scrim_color">#4D0A0E1A</color>
+    <color name="notification_material_background_color">#26FFFFFF</color>
+    <dimen name="qs_corner_radius">28dp</dimen>
+    <dimen name="notification_corner_radius">24dp</dimen>
+</resources>

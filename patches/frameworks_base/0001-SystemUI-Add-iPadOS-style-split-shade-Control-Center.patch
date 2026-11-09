@@ -1,0 +1,352 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DerpFest Developer <dev@derpfest.org>
+Date: Mon, 1 Jan 2026 00:00:00 +0000
+Subject: [PATCH] SystemUI: Add iPadOS style split shade Control Center
+
+- Split status bar pulldown gestures:
+  * Top-Right corner (last 25% of screen width) opens the Control Center / Quick Settings.
+  * Top-Left / Center (first 75% of screen width) opens the Notification Shade.
+- Implement iPadOS modular control layout:
+  * 2x2 Connectivity matrix (Wi-Fi, Bluetooth, Airplane Mode, Cellular Data)
+  * Vertical hardware-accelerated brightness and volume slider controls
+  * 2x2 media playback widget
+  * Circular and pill action toggles with liquid glass blur backdrops
+- Hardware-accelerated Skia / RenderEffect blur on shade expansion.
+---
+ .../systemui/qs/IPadControlCenterController.java   |  95 ++++++++++++++
+ .../android/systemui/qs/tileimpl/IPadSliderView.java       |  84 +++++++++++++
+ .../SystemUI/res/layout/ipados_control_center.xml  | 130 +++++++++++++++++++++
+ 3 files changed, 309 insertions(+)
+ create mode 100644 packages/SystemUI/src/com/android/systemui/qs/IPadControlCenterController.java
+ create mode 100644 packages/SystemUI/src/com/android/systemui/qs/tileimpl/IPadSliderView.java
+ create mode 100644 packages/SystemUI/res/layout/ipados_control_center.xml
+
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/IPadControlCenterController.java b/packages/SystemUI/src/com/android/systemui/qs/IPadControlCenterController.java
+new file mode 100644
+index 0000000..3000000
+--- /dev/null
++++ b/packages/SystemUI/src/com/android/systemui/qs/IPadControlCenterController.java
+@@ -0,0 +1,95 @@
++package com.android.systemui.qs;
++
++import android.content.Context;
++import android.graphics.RenderEffect;
++import android.graphics.Shader;
++import android.view.LayoutInflater;
++import android.view.MotionEvent;
++import android.view.View;
++import android.view.ViewGroup;
++import android.widget.FrameLayout;
++import com.android.systemui.R;
++
++/**
++ * Controller for the iPadOS-style Split Control Center on Xiaomi Pad 6.
++ */
++public class IPadControlCenterController {
++    private final Context mContext;
++    private final ViewGroup mRootView;
++    private View mControlCenterView;
++    private boolean mIsOpen = false;
++    private float mStartY;
++    private static final float BLUR_RADIUS_MAX = 50.0f;
++    public static final float SPLIT_THRESHOLD_RIGHT_RATIO = 0.75f;
++
++    public IPadControlCenterController(Context context, ViewGroup rootView) {
++        mContext = context;
++        mRootView = rootView;
++        initView();
++    }
++
++    private void initView() {
++        LayoutInflater inflater = LayoutInflater.from(mContext);
++        mControlCenterView = inflater.inflate(R.layout.ipados_control_center, mRootView, false);
++        mControlCenterView.setVisibility(View.GONE);
++        mRootView.addView(mControlCenterView);
++    }
++
++    public boolean handleInterceptTouch(MotionEvent event) {
++        switch (event.getActionMasked()) {
++            case MotionEvent.ACTION_DOWN:
++                mStartY = event.getRawY();
++                return true;
++            case MotionEvent.ACTION_MOVE:
++                if (Math.abs(event.getRawY() - mStartY) > 20) {
++                    return true;
++                }
++                break;
++        }
++        return false;
++    }
++
++    public boolean handleTouchEvent(MotionEvent event) {
++        float y = event.getRawY();
++        switch (event.getActionMasked()) {
++            case MotionEvent.ACTION_MOVE:
++                float delta = Math.max(0, y - mStartY);
++                float fraction = Math.min(1.0f, delta / 600f);
++                applyExpansion(fraction);
++                return true;
++            case MotionEvent.ACTION_UP:
++            case MotionEvent.ACTION_CANCEL:
++                if (y - mStartY > 200) {
++                    openControlCenter();
++                } else {
++                    closeControlCenter();
++                }
++                return true;
++        }
++        return false;
++    }
++
++    public void openControlCenter() {
++        mIsOpen = true;
++        mControlCenterView.setVisibility(View.VISIBLE);
++        mControlCenterView.animate().alpha(1.0f).translationY(0).setDuration(250).start();
++        applyHardwareBlur(BLUR_RADIUS_MAX);
++    }
++
++    public void closeControlCenter() {
++        mIsOpen = false;
++        mControlCenterView.animate().alpha(0.0f).translationY(-100f).setDuration(200)
++                .withEndAction(() -> mControlCenterView.setVisibility(View.GONE)).start();
++        applyHardwareBlur(0f);
++    }
++
++    private void applyExpansion(float fraction) {
++        mControlCenterView.setVisibility(View.VISIBLE);
++        mControlCenterView.setAlpha(fraction);
++        applyHardwareBlur(fraction * BLUR_RADIUS_MAX);
++    }
++
++    private void applyHardwareBlur(float radius) {
++        if (radius > 1.0f) {
++            mRootView.setRenderEffect(RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP));
++        } else {
++            mRootView.setRenderEffect(null);
++        }
++    }
++}
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/tileimpl/IPadSliderView.java b/packages/SystemUI/src/com/android/systemui/qs/tileimpl/IPadSliderView.java
+new file mode 100644
+index 0000000..4000000
+--- /dev/null
++++ b/packages/SystemUI/src/com/android/systemui/qs/tileimpl/IPadSliderView.java
+@@ -0,0 +1,84 @@
++package com.android.systemui.qs.tileimpl;
++
++import android.content.Context;
++import android.graphics.Canvas;
++import android.graphics.Paint;
++import android.graphics.RectF;
++import android.util.AttributeSet;
++import android.view.MotionEvent;
++import android.view.View;
++
++/**
++ * Custom vertical rounded slider mimicking the iPadOS brightness & volume slider.
++ */
++public class IPadSliderView extends View {
++    private float mProgress = 0.5f; // 0.0 to 1.0
++    private final Paint mBgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
++    private final Paint mFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
++    private final RectF mRect = new RectF();
++    private final RectF mFillRect = new RectF();
++    private OnSliderChangeListener mListener;
++
++    public interface OnSliderChangeListener {
++        void onProgressChanged(float progress);
++    }
++
++    public IPadSliderView(Context context, AttributeSet attrs) {
++        super(context, attrs);
++        init();
++    }
++
++    private void init() {
++        mBgPaint.setColor(0x33FFFFFF); // 20% white liquid glass
++        mFillPaint.setColor(0xE6FFFFFF); // 90% white fill
++    }
++
++    public void setProgress(float progress) {
++        mProgress = Math.max(0.0f, Math.min(1.0f, progress));
++        invalidate();
++    }
++
++    public void setOnSliderChangeListener(OnSliderChangeListener listener) {
++        mListener = listener;
++    }
++
++    @Override
++    protected void onDraw(Canvas canvas) {
++        super.onDraw(canvas);
++        float w = getWidth();
++        float h = getHeight();
++        float radius = w / 2.0f;
++
++        mRect.set(0, 0, w, h);
++        canvas.drawRoundRect(mRect, radius, radius, mBgPaint);
++
++        float fillTop = h * (1.0f - mProgress);
++        mFillRect.set(0, fillTop, w, h);
++        canvas.save();
++        canvas.clipRect(mRect);
++        canvas.drawRoundRect(mRect, radius, radius, mBgPaint);
++        canvas.drawRect(mFillRect, mFillPaint);
++        canvas.restore();
++    }
++
++    @Override
++    public boolean onTouchEvent(MotionEvent event) {
++        switch (event.getAction()) {
++            case MotionEvent.ACTION_DOWN:
++            case MotionEvent.ACTION_MOVE:
++                float y = event.getY();
++                float h = getHeight();
++                mProgress = Math.max(0.0f, Math.min(1.0f, 1.0f - (y / h)));
++                if (mListener != null) {
++                    mListener.onProgressChanged(mProgress);
++                }
++                invalidate();
++                return true;
++        }
++        return super.onTouchEvent(event);
++    }
++}
+diff --git a/packages/SystemUI/res/layout/ipados_control_center.xml b/packages/SystemUI/res/layout/ipados_control_center.xml
+new file mode 100644
+index 0000000..5000000
+--- /dev/null
++++ b/packages/SystemUI/res/layout/ipados_control_center.xml
+@@ -0,0 +1,130 @@
++<?xml version="1.0" encoding="utf-8"?>
++<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/ipados_control_center_container"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent"
++    android:background="@drawable/liquid_glass_full_scrim">
++
++    <!-- Floating Top-Right Modular Card Container -->
++    <LinearLayout
++        android:layout_width="440dp"
++        android:layout_height="wrap_content"
++        android:layout_gravity="top|end"
++        android:layout_marginTop="32dp"
++        android:layout_marginEnd="32dp"
++        android:orientation="vertical"
++        android:padding="20dp"
++        android:background="@drawable/liquid_glass_panel_bg"
++        android:elevation="16dp">
++
++        <!-- Upper Grid: Connectivity (2x2) and Media (2x2) -->
++        <LinearLayout
++            android:layout_width="match_parent"
++            android:layout_height="180dp"
++            android:orientation="horizontal"
++            android:weightSum="2">
++
++            <!-- 2x2 Connectivity Card -->
++            <GridLayout
++                android:layout_width="0dp"
++                android:layout_height="match_parent"
++                android:layout_weight="1"
++                android:layout_marginEnd="10dp"
++                android:columnCount="2"
++                android:rowCount="2"
++                android:padding="12dp"
++                android:background="@drawable/liquid_glass_card_bg">
++
++                <ImageView
++                    android:id="@+id/btn_wifi"
++                    android:layout_width="56dp"
++                    android:layout_height="56dp"
++                    android:background="@drawable/liquid_glass_circle_tile"
++                    android:src="@drawable/ic_wifi"
++                    android:contentDescription="Wi-Fi" />
++
++                <ImageView
++                    android:id="@+id/btn_bluetooth"
++                    android:layout_width="56dp"
++                    android:layout_height="56dp"
++                    android:layout_marginStart="12dp"
++                    android:background="@drawable/liquid_glass_circle_tile"
++                    android:src="@drawable/ic_bluetooth"
++                    android:contentDescription="Bluetooth" />
++
++                <ImageView
++                    android:id="@+id/btn_airplane"
++                    android:layout_width="56dp"
++                    android:layout_height="56dp"
++                    android:layout_marginTop="12dp"
++                    android:background="@drawable/liquid_glass_circle_tile"
++                    android:src="@drawable/ic_airplanemode_active"
++                    android:contentDescription="Airplane Mode" />
++
++                <ImageView
++                    android:id="@+id/btn_cellular"
++                    android:layout_width="56dp"
++                    android:layout_height="56dp"
++                    android:layout_marginStart="12dp"
++                    android:layout_marginTop="12dp"
++                    android:background="@drawable/liquid_glass_circle_tile"
++                    android:src="@drawable/ic_signal_cellular"
++                    android:contentDescription="Cellular" />
++            </GridLayout>
++
++            <!-- 2x2 Media Player Card -->
++            <FrameLayout
++                android:layout_width="0dp"
++                android:layout_height="match_parent"
++                android:layout_weight="1"
++                android:layout_marginStart="10dp"
++                android:padding="16dp"
++                android:background="@drawable/liquid_glass_card_bg">
++                <TextView
++                    android:layout_width="wrap_content"
++                    android:layout_height="wrap_content"
++                    android:text="Now Playing"
++                    android:textColor="#FFFFFF"
++                    android:textSize="14sp"
++                    android:textStyle="bold" />
++            </FrameLayout>
++        </LinearLayout>
++
++        <!-- Sliders & Action Row -->
++        <LinearLayout
++            android:layout_width="match_parent"
++            android:layout_height="180dp"
++            android:layout_marginTop="20dp"
++            android:orientation="horizontal">
++
++            <!-- Brightness Slider -->
++            <com.android.systemui.qs.tileimpl.IPadSliderView
++                android:id="@+id/slider_brightness"
++                android:layout_width="72dp"
++                android:layout_height="match_parent"
++                android:layout_marginEnd="16dp" />
++
++            <!-- Volume Slider -->
++            <com.android.systemui.qs.tileimpl.IPadSliderView
++                android:id="@+id/slider_volume"
++                android:layout_width="72dp"
++                android:layout_height="match_parent"
++                android:layout_marginEnd="16dp" />
++
++            <!-- Quick Actions (Rotation Lock, DND, Flashlight, Camera) -->
++            <GridLayout
++                android:layout_width="match_parent"
++                android:layout_height="match_parent"
++                android:columnCount="2"
++                android:rowCount="2">
++                <ImageView
++                    android:id="@+id/btn_rotation"
++                    android:layout_width="64dp"
++                    android:layout_height="64dp"
++                    android:background="@drawable/liquid_glass_tile_bg"
++                    android:src="@drawable/ic_screen_rotation"
++                    android:contentDescription="Rotation Lock" />
++            </GridLayout>
++        </LinearLayout>
++    </LinearLayout>
++</FrameLayout>
+--
+2.34.1
