@@ -1,0 +1,21 @@
+#!/sbin/sh
+##########################################################################################
+#
+# Magisk General Utility Functions
+#
+##########################################################################################
+
+OUTFD=$2
+ZIPFILE=$3
+
+ui_print() {
+  echo "ui_print $1" > /proc/self/fd/$OUTFD
+  echo "ui_print" > /proc/self/fd/$OUTFD
+}
+
+# Delegate directly to Magisk busybox / installer if flashed in Recovery
+if [ -f /data/adb/magisk/busybox ]; then
+  exec /data/adb/magisk/busybox sh -c "$0" "$@"
+fi
+
+exit 0

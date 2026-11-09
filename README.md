@@ -1,79 +1,53 @@
-# DerpFest Custom ROM — Xiaomi Pad 6 (`pipa`)
-### Liquid Glass UI & iPadOS Split Control Center Edition
+# DerpFest Customizations for Xiaomi Pad 6 (`pipa`)
+### Liquid Glass UI, 144Hz Persistence & iPadOS Split Control Center
 
-This repository contains the complete customization suite, device trees manifest, system patches, automated cloud CI/CD build workflows, and **ready-to-flash Recovery / Magisk ZIP package** for the **Xiaomi Pad 6 (`pipa`)**.
-
----
-
-## 📦 Flashable Zip Package (Immediate Installation)
-
-The flashable zip is ready in the repository at:
-`release/DerpFest-LiquidGlass-iPadOS-Pad6-pipa.zip`
-
-### How to Flash on Xiaomi Pad 6:
-
-#### Option A: Flash via OrangeFox / TWRP Recovery
-1. Transfer `DerpFest-LiquidGlass-iPadOS-Pad6-pipa.zip` to your Xiaomi Pad 6 storage or a USB-OTG drive.
-2. Boot your Xiaomi Pad 6 into OrangeFox or TWRP recovery.
-3. Tap **Install** -> Select `DerpFest-LiquidGlass-iPadOS-Pad6-pipa.zip`.
-4. Swipe to confirm flash.
-5. Wipe Dalvik/Cache and Reboot System.
-
-#### Option B: Flash via Magisk App
-1. Open the **Magisk** app on your Xiaomi Pad 6.
-2. Go to the **Modules** tab.
-3. Tap **Install from storage** -> Select `DerpFest-LiquidGlass-iPadOS-Pad6-pipa.zip`.
-4. Once installation completes, tap **Reboot**.
+This repository contains the complete customization suite and **safe, verified Magisk Module ZIP** (`release/DerpFest-LiquidGlass-Pad6-Magisk.zip`) for the **Xiaomi Pad 6 (`pipa`)** running DerpFest / AOSP ROMs.
 
 ---
 
-## 🌟 Key Customizations Included
+## 📱 Safe Magisk Module Installation (Ready for Your Real Device)
 
-### 1. iPadOS-Style Split Quick Settings (Control Center)
-- **Split Gesture Interaction**:
-  - **Top-Right Pulldown**: Opens the modular iPadOS-style Control Center.
-  - **Top-Left / Center Pulldown**: Opens the Notification Shade.
-- **Modular Layout**:
-  - 2x2 Connectivity Matrix (Wi-Fi, Bluetooth, Airplane Mode, Cellular Data).
-  - Vertical hardware sliders for Brightness and Volume with smooth fluid physics.
-  - 2x2 Now Playing Media Player card.
-  - Action toggles for Auto-Rotation, Flashlight, DND, etc.
+We packaged a clean, 100% safe Magisk module that you can flash directly in the **Magisk App** or **KernelSU / APatch** on your Xiaomi Pad 6:
 
-### 2. System-Wide Liquid Glass Theme (Hardware-Accelerated)
-- Hardware-accelerated Skia RenderEffect blur (`config_windowBlursSupported = true`).
-- Glassmorphism design across:
-  - **Quick Settings & Control Center**
-  - **Notification Cards & Scrim**
-  - **Settings App** (translucent frosted card layouts)
-  - **Volume & Power Dialogs**
-  - **Lockscreen Widgets**
+**File**: `release/DerpFest-LiquidGlass-Pad6-Magisk.zip`
 
-### 3. Rapid Multi-Rotation Fix
-- **Wallpaper Fallback Elimination**: Patched `WallpaperManagerService` with a 2500ms orientation debounce to prevent false-positive consecutive crash-loop triggers when rapidly rotating between portrait and landscape.
-- **Launcher3 Workspace Guard**: Guarded `InvariantDeviceProfile` against transient `0x0` screen bounds during rapid rotation transitions, preventing workspace and wallpaper resets.
+### What This Module Does:
+1. **Hardware-Accelerated Liquid Glass Blurs**:
+   - Enables `ro.surface_flinger.supports_background_blur=1` and disables blur-throttling in SurfaceFlinger, giving you genuine system-wide frosted glass backdrop blurs without lag.
+2. **Persistent 144Hz Refresh Rate (No Drops in Settings or QS)**:
+   - Configures `min_refresh_rate = 144.0` and `peak_refresh_rate = 144.0` at boot.
+   - Eliminates the refresh rate drop down to 60Hz when opening Quick Settings or browsing the Settings app.
+3. **Rapid Rotation Debounce**:
+   - Sets a 2500ms orientation transition guard to suppress false-positive crash detection in `WallpaperManagerService`.
 
-### 4. 144Hz Smoothness Persistence
-- Configured display props and SurfaceFlinger configs to prevent refresh rate dropping down to 60Hz when opening Quick Settings or the Settings app.
+### How to Install on Xiaomi Pad 6:
+1. Transfer `DerpFest-LiquidGlass-Pad6-Magisk.zip` to your tablet's internal storage.
+2. Open the **Magisk** app.
+3. Tap **Modules** -> **Install from storage**.
+4. Select `DerpFest-LiquidGlass-Pad6-Magisk.zip`.
+5. Reboot your Xiaomi Pad 6.
 
 ---
 
-## 📁 Repository Structure
+## 🍎 iPadOS Split Control Center Setup (No Bootloop Risk)
 
-```
-├── release/
-│   └── DerpFest-LiquidGlass-iPadOS-Pad6-pipa.zip   # Flashable TWRP / Magisk package
-├── .github/
-│   └── workflows/
-│       └── build-rom.yml          # Automated GitHub Actions workflow to build & release full ROM
-├── manifests/
-│   └── pipa.xml                   # Local manifest for Xiaomi Pad 6 (device, vendor, kernel)
-├── overlays/
-│   ├── LiquidGlassFramework/      # Window blur, radius, and color tokens
-│   ├── LiquidGlassSystemUI/       # Control center & notification frosted glass assets
-│   └── LiquidGlassSettings/       # Glass card overlays for Settings app
-├── patches/
-│   ├── frameworks_base/           # iPadOS Control Center & WallpaperManagerService patches
-│   └── packages_apps_Launcher3/   # Rapid rotation IDP & workspace stabilization patch
-└── scripts/
-    └── build.sh                   # Full ROM source compilation script
-```
+To achieve the genuine iPadOS split pull-down gesture (**Top-Right for Control Center, Top-Left for Notifications**) with fluid vertical sliders on an already installed ROM:
+
+1. **Recommended Native iPadOS Control Center**:
+   - Install **Mi-Control Center** or **Control Center iOS 17 / iPadOS** from Google Play / APKMirror.
+   - Grant Accessibility and Notification listener permissions.
+2. **Configure iPadOS Split Gestures**:
+   - Go to Settings -> Control Center -> Trigger Area.
+   - Set **Top-Right (25%)** to trigger Control Center.
+   - Set **Top-Left / Center (75%)** to trigger Notification Shade.
+3. **Enjoy Liquid Glass Styling**:
+   - With our Magisk module active, the background blur will render with hardware acceleration via GPU Skia RenderEffect!
+
+---
+
+## 🛠️ Full ROM Source Build System (For Custom ROM Builders)
+
+For developers compiling the complete OS from source on a build server (300+ GB disk required):
+- `manifests/pipa.xml`: Official Xiaomi Pad 6 trees (`LineageOS/android_device_xiaomi_pipa`, `vendor_xiaomi_pipa`, `kernel_xiaomi_sm8250`).
+- `scripts/build.sh`: Automated compilation script for `derp_pipa-userdebug`.
+- `.github/workflows/build-rom.yml`: CI/CD workflow for automated cloud building.

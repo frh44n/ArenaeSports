@@ -1,0 +1,15 @@
+# Xiaomi Pad 6 (pipa) Liquid Glass & Display Performance Tweaks
+
+# 1. Enable SurfaceFlinger Hardware Window & Render Blurs
+ro.surface_flinger.supports_background_blur=1
+persist.sys.sf.disable_blurs=0
+debug.sf.enable_gl_backpressure=1
+
+# 2. Lock Peak Refresh Rate at 144Hz across UI & Settings
+ro.vendor.display.default_fps=144
+persist.sys.miui.refresh_rate.mode=144
+ro.surface_flinger.has_wide_color_display=true
+ro.surface_flinger.has_HDR_display=true
+
+# 3. Suppress False Wallpaper Crash Loop Trigger on Rapid Orientation Change
+persist.sys.wallpaper.debounce_ms=2500

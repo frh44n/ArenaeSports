@@ -1,0 +1,6 @@
+id=derpfest_liquid_glass_pad6
+name=DerpFest Liquid Glass & 144Hz Optimizer (Xiaomi Pad 6)
+version=v1.0
+versionCode=100
+author=DerpFest Community
+description=Safely enables hardware-accelerated Liquid Glass RenderEffect blur, persistent 144Hz refresh rate, rotation stabilization, and sets up iPadOS Split Control Center for Xiaomi Pad 6 (pipa).
