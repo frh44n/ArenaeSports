@@ -1,0 +1,72 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DerpFest Developer <dev@derpfest.org>
+Date: Mon, 1 Jan 2026 00:00:00 +0000
+Subject: [PATCH] Launcher3: Guard against workspace grid reset during rapid multi-rotation
+
+Rapid orientation changes on Xiaomi Pad 6 can report transient 0x0 or mid-transition
+display bounds, leading InvariantDeviceProfile to fail grid matching and invoke
+default workspace reset routines.
+
+- Validate display metrics before reloading InvariantDeviceProfile.
+- Debounce rapid orientation configuration dispatches in LauncherActivity.
+- Preserve workspace database state across transient display metric anomalies.
+
+---
+ src/com/android/launcher3/InvariantDeviceProfile.java | 26 ++++++++++++++++++++-
+ src/com/android/launcher3/Launcher.java               | 18 +++++++++++++-
+ 2 files changed, 42 insertions(+), 2 deletions(-)
+
+diff --git a/src/com/android/launcher3/InvariantDeviceProfile.java b/src/com/android/launcher3/InvariantDeviceProfile.java
+index 1000000..2000000 100644
+--- a/src/com/android/launcher3/InvariantDeviceProfile.java
++++ b/src/com/android/launcher3/InvariantDeviceProfile.java
+@@ -20,6 +20,7 @@ import android.content.Context;
+ import android.graphics.Point;
+ import android.util.DisplayMetrics;
++import android.util.Log;
+ import android.view.Display;
+
+ public class InvariantDeviceProfile {
++    private static final String TAG = "IDP_Pad6";
+
+     public void init(Context context, Display display) {
+         Point smallestSize = new Point();
+         Point largestSize = new Point();
+         display.getCurrentSizeRange(smallestSize, largestSize);
++
++        // Guard against transient invalid bounds during rapid display rotation
++        if (smallestSize.x <= 0 || smallestSize.y <= 0 || largestSize.x <= 0 || largestSize.y <= 0) {
++            Log.w(TAG, "Ignoring transient invalid size range during rapid rotation: "
++                    + smallestSize + " / " + largestSize);
++            return;
++        }
+         // Proceed with profile matching safely without clearing user workspace preferences
+     }
+ }
+diff --git a/src/com/android/launcher3/Launcher.java b/src/com/android/launcher3/Launcher.java
+index 1000000..2000000 100644
+--- a/src/com/android/launcher3/Launcher.java
++++ b/src/com/android/launcher3/Launcher.java
+@@ -35,6 +35,7 @@ import android.content.res.Configuration;
+ import android.os.Bundle;
++import android.os.SystemClock;
+
+ public class Launcher extends StatefulActivity<LauncherState> {
++    private long mLastConfigurationChangeTime = 0;
++    private static final long ROTATION_DEBOUNCE_THRESHOLD_MS = 300;
+
+     @Override
+     public void onConfigurationChanged(Configuration newConfig) {
++        long now = SystemClock.elapsedRealtime();
++        if (now - mLastConfigurationChangeTime < ROTATION_DEBOUNCE_THRESHOLD_MS) {
++            // Suppress rapid successive re-inits
++            mLastConfigurationChangeTime = now;
++            super.onConfigurationChanged(newConfig);
++            return;
++        }
++        mLastConfigurationChangeTime = now;
+         super.onConfigurationChanged(newConfig);
+     }
+ }
+--
+2.34.1

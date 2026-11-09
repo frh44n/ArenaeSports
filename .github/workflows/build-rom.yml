@@ -1,0 +1,61 @@
+name: Build DerpFest Custom ROM (Xiaomi Pad 6)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type (user / userdebug)'
+        required: true
+        default: 'userdebug'
+
+jobs:
+  build:
+    name: Build DerpFest for pipa
+    # AOSP / Custom ROM compilation requires 250GB-350GB disk space and 16GB-32GB RAM.
+    # Use a self-hosted runner with sufficient NVMe storage or high-spec cloud runner.
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - name: Checkout Customization Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev \
+            libc6-dev-i386 libncurses5 x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev \
+            libxml2 libxml2-utils xsltproc unzip fontconfig ccache rsync bc openjdk-17-jdk
+
+      - name: Install Repo Tool
+        run: |
+          mkdir -p ~/.bin
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/.bin/repo
+          chmod a+x ~/.bin/repo
+          echo "$HOME/.bin" >> $GITHUB_PATH
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "DerpFest Builder"
+          git config --global user.email "builder@derpfest.org"
+
+      - name: Run Build Script
+        run: |
+          export WORKSPACE_DIR="$HOME/derpfest_workspace"
+          bash scripts/build.sh
+
+      - name: Upload ROM Artifact to Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          files: $HOME/derpfest_workspace/out/target/product/pipa/DerpFest*.zip
+          tag_name: "v1.0-pipa-${{ github.run_number }}"
+          name: "DerpFest Liquid Glass Edition - Xiaomi Pad 6"
+          body: |
+            ## DerpFest for Xiaomi Pad 6 (`pipa`)
+            **Liquid Glass UI & iPadOS Split Control Center Edition**
+
+            ### Features & Fixes:
+            - **iPadOS Style Control Center**: Split pull-down gestures (Top-Right: Control Center, Top-Left: Notifications).
+            - **Liquid Glass Aesthetic**: Hardware-accelerated Skia RenderEffect blur across Settings, SystemUI, and Quick Settings.
+            - **Rapid Rotation Fix**: Eliminated wallpaper resets and workspace icon clearing during rapid orientation switching.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

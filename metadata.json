@@ -1,6 +1,0 @@
-{
-  "name": "Arena Esports",
-  "description": "An elite gaming community platform displaying live statistics, game updates, and daily tournaments.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

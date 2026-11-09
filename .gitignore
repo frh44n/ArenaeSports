@@ -1,8 +1,16 @@
-node_modules/
-build/
-dist/
-coverage/
-.DS_Store
+# Build artifacts
+out/
+.repo/
+*.zip
+*.img
+*.tar.gz
 *.log
-.env*
-!.env.example
+ccache/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

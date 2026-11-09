@@ -1,9 +1,0 @@
-@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@600&family=Sora:wght@400;700;800&display=swap');
-@import "tailwindcss";
-
-@theme {
-  --font-sans: "Hanken Grotesk", sans-serif;
-  --font-sora: "Sora", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --color-background: #0d1515;
-}

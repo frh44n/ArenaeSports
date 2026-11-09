@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.derpfest.overlay.liquidglass.framework">
+    <overlay
+        android:targetPackage="android"
+        android:targetName="LiquidGlassFramework"
+        android:isStatic="true"
+        android:priority="1000" />
+</manifest>
