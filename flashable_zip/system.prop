@@ -1,0 +1,14 @@
+# Liquid Glass & Display Tweaks for Xiaomi Pad 6 (pipa)
+# Enable window and render blur
+ro.surface_flinger.supports_background_blur=1
+persist.sys.sf.disable_blurs=0
+debug.sf.enable_gl_backpressure=1
+
+# Maintain 144Hz refresh rate across UI & Settings
+ro.surface_flinger.has_wide_color_display=true
+ro.surface_flinger.has_HDR_display=true
+persist.sys.miui.refresh_rate.mode=144
+ro.vendor.display.default_fps=144
+
+# Stabilize orientation changes
+persist.sys.rotation.debounce_ms=2500

@@ -1,11 +1,33 @@
 # DerpFest Custom ROM — Xiaomi Pad 6 (`pipa`)
 ### Liquid Glass UI & iPadOS Split Control Center Edition
 
-This repository contains the complete customization suite, device trees manifest, system patches, and automated cloud CI/CD build workflows for compiling **DerpFest OS** for the **Xiaomi Pad 6 (`pipa`)**.
+This repository contains the complete customization suite, device trees manifest, system patches, automated cloud CI/CD build workflows, and **ready-to-flash Recovery / Magisk ZIP package** for the **Xiaomi Pad 6 (`pipa`)**.
 
 ---
 
-## 🌟 Key Customizations
+## 📦 Flashable Zip Package (Immediate Installation)
+
+The flashable zip is ready in the repository at:
+`release/DerpFest-LiquidGlass-iPadOS-Pad6-pipa.zip`
+
+### How to Flash on Xiaomi Pad 6:
+
+#### Option A: Flash via OrangeFox / TWRP Recovery
+1. Transfer `DerpFest-LiquidGlass-iPadOS-Pad6-pipa.zip` to your Xiaomi Pad 6 storage or a USB-OTG drive.
+2. Boot your Xiaomi Pad 6 into OrangeFox or TWRP recovery.
+3. Tap **Install** -> Select `DerpFest-LiquidGlass-iPadOS-Pad6-pipa.zip`.
+4. Swipe to confirm flash.
+5. Wipe Dalvik/Cache and Reboot System.
+
+#### Option B: Flash via Magisk App
+1. Open the **Magisk** app on your Xiaomi Pad 6.
+2. Go to the **Modules** tab.
+3. Tap **Install from storage** -> Select `DerpFest-LiquidGlass-iPadOS-Pad6-pipa.zip`.
+4. Once installation completes, tap **Reboot**.
+
+---
+
+## 🌟 Key Customizations Included
 
 ### 1. iPadOS-Style Split Quick Settings (Control Center)
 - **Split Gesture Interaction**:
@@ -30,14 +52,19 @@ This repository contains the complete customization suite, device trees manifest
 - **Wallpaper Fallback Elimination**: Patched `WallpaperManagerService` with a 2500ms orientation debounce to prevent false-positive consecutive crash-loop triggers when rapidly rotating between portrait and landscape.
 - **Launcher3 Workspace Guard**: Guarded `InvariantDeviceProfile` against transient `0x0` screen bounds during rapid rotation transitions, preventing workspace and wallpaper resets.
 
+### 4. 144Hz Smoothness Persistence
+- Configured display props and SurfaceFlinger configs to prevent refresh rate dropping down to 60Hz when opening Quick Settings or the Settings app.
+
 ---
 
 ## 📁 Repository Structure
 
 ```
+├── release/
+│   └── DerpFest-LiquidGlass-iPadOS-Pad6-pipa.zip   # Flashable TWRP / Magisk package
 ├── .github/
 │   └── workflows/
-│       └── build-rom.yml          # Automated GitHub Actions workflow to build & release ROM
+│       └── build-rom.yml          # Automated GitHub Actions workflow to build & release full ROM
 ├── manifests/
 │   └── pipa.xml                   # Local manifest for Xiaomi Pad 6 (device, vendor, kernel)
 ├── overlays/
@@ -48,26 +75,5 @@ This repository contains the complete customization suite, device trees manifest
 │   ├── frameworks_base/           # iPadOS Control Center & WallpaperManagerService patches
 │   └── packages_apps_Launcher3/   # Rapid rotation IDP & workspace stabilization patch
 └── scripts/
-    └── build.sh                   # One-click build script
+    └── build.sh                   # Full ROM source compilation script
 ```
-
----
-
-## 🚀 How to Build
-
-### Option 1: Automated Cloud Build via GitHub Actions
-1. Fork or push this repository to your GitHub.
-2. Go to the **Actions** tab on your repository.
-3. Select **Build DerpFest Custom ROM (Xiaomi Pad 6)** and click **Run workflow**.
-4. The workflow will sync the sources, apply the liquid glass and iPadOS patches, compile the ROM, and publish the flashable `.zip` to **GitHub Releases**.
-
-### Option 2: Local / Server Compilation
-Run the one-click build script on any Linux build server:
-
-```bash
-git clone https://github.com/frh44n/ArenaeSports.git derpfest-pipa
-cd derpfest-pipa
-bash scripts/build.sh
-```
-
-The completed ROM zip will be located in `out/target/product/pipa/`.

@@ -1,0 +1,7 @@
+id=derpfest_liquid_glass_pipa
+name=DerpFest Liquid Glass & iPadOS Control Center (Xiaomi Pad 6)
+version=v1.0
+versionCode=100
+author=DerpFest Developer
+description=Applies hardware-accelerated Liquid Glass theme overlays, iPadOS Control Center layout, 144Hz high refresh rate persistence, and rapid-rotation stabilization for Xiaomi Pad 6 (pipa).
+minMagisk=20400
